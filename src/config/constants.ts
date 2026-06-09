@@ -1,0 +1,2 @@
+export const AGING_THRESHOLD_MS = 30_000;
+export const AGING_BOOST_INTERVAL_MS = 30_000;
