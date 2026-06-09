@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum JobStatus {
+  pending
+  processing
+  completed
+  failed
+  cancelled
+}
+
+model Job {
+  id               String     @id @default(uuid())
+  type             String
+  payload          Json
+  priority         Int        @default(2)
+  status           JobStatus  @default(pending)
+  scheduledAt      DateTime   @default(now())
+  recurringInterval String?
+  retryCount       Int        @default(0)
+  maxRetries       Int        @default(3)
+  lastError        String?
+  workerId         String?
+  claimedAt        DateTime?
+  nextRunAt        DateTime?
+  inDlq            Boolean    @default(false)
+  dlqAlerted       Boolean    @default(false)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  dependencies     JobDependency[] @relation("dependent")
+  dependents       JobDependency[] @relation("dependency")
+
+  @@index([status, scheduledAt])
+  @@index([inDlq])
+}
+
+model JobDependency {
+  id              String @id @default(uuid())
+  jobId           String
+  dependsOnJobId  String
+
+  job             Job    @relation("dependent", fields: [jobId], references: [id], onDelete: Cascade)
+  dependsOn       Job    @relation("dependency", fields: [dependsOnJobId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, dependsOnJobId])
+  @@index([dependsOnJobId])
+}
