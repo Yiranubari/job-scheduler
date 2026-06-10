@@ -3,6 +3,7 @@ import cors from "cors";
 import rateLimit from "express-rate-limit";
 import jobsRouter from "@/modules/jobs/jobs.routes";
 import eventsRouter from "@/modules/events/events.routes";
+import dlqRouter from "@/modules/dlq/dlq.routes";
 import {
   errorMiddleware,
   notFoundMiddleware,
@@ -31,6 +32,7 @@ app.get("/health", (_req, res) => {
 });
 
 app.use("/api/jobs", jobsRouter);
+app.use("/api/dlq", dlqRouter);
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);

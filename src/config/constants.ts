@@ -15,3 +15,4 @@ export const INFLIGHT_TTL_SECONDS = 30;
 export const REAPER_TICK_MS = 10_000;
 export const STUCK_TIMEOUT_MS = 60_000;
 export const INFLIGHT_PREFIX = "inflight:";
+export const DLQ_ALERT_THRESHOLD = 10;
