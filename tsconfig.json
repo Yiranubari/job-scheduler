@@ -17,6 +17,12 @@
     "sourceMap": true,
     "declaration": false
   },
-  "include": ["src/**/*", "prisma.config.ts", "tests/**/*", "vitest.config.ts"],
+  "include": [
+    "src/**/*",
+    "prisma.config.ts",
+    "tests/**/*",
+    "vitest.config.ts",
+    "bench/**/*"
+  ],
   "exclude": ["node_modules", "dist"]
 }
