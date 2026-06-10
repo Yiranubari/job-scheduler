@@ -5,6 +5,8 @@ import jobsRouter from "@/modules/jobs/jobs.routes";
 import eventsRouter from "@/modules/events/events.routes";
 import dashboardRouter from "@/modules/dashboard/dashboard.routes";
 import dlqRouter from "@/modules/dlq/dlq.routes";
+import swaggerUi from "swagger-ui-express";
+import { swaggerSpec } from "@/docs/swagger";
 import {
   errorMiddleware,
   notFoundMiddleware,
@@ -35,6 +37,8 @@ app.get("/health", (_req, res) => {
 app.use("/api/jobs", jobsRouter);
 app.use("/api/dlq", dlqRouter);
 app.use("/api/dashboard", dashboardRouter);
+
+app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);
