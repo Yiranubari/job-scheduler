@@ -177,7 +177,7 @@ export default function CreateJob({ onCreated }: { onCreated: () => void }) {
               </span>
             ))}
             <input
-              placeholder="Search jobs…"
+              placeholder="Search by job ID or type…"
               value={search}
               onChange={(e) => doSearch(e.target.value)}
             />
@@ -204,6 +204,9 @@ export default function CreateJob({ onCreated }: { onCreated: () => void }) {
                 </button>
               ))}
             </div>
+          )}
+          {search.length >= 2 && results.length === 0 && (
+            <p className="help">No matching jobs</p>
           )}
           {errors.dependsOn && (
             <p className="field-error">{errors.dependsOn}</p>
