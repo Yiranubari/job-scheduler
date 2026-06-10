@@ -32,3 +32,5 @@ export interface LogPayload {
   level: "info" | "warn" | "error";
   message: string;
 }
+
+export type Subscriber = (message: string) => void;
