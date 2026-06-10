@@ -1,4 +1,4 @@
-import { Job } from "@prisma/client";
+import { Job, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/utils/logger";
 import { publishJobUpdate } from "@/modules/events/events.service";
@@ -13,7 +13,7 @@ export class DlqService {
     });
   }
 
-  async retry(id: string): Promise<Job> {
+  async retry(id: string, payload?: Record<string, unknown>): Promise<Job> {
     const job = await prisma.job.findUnique({ where: { id } });
     if (!job) throw new NotFoundError(`Job ${id} not found`);
     if (!job.inDlq)
@@ -29,10 +29,11 @@ export class DlqService {
         scheduledAt: new Date(),
         workerId: null,
         claimedAt: null,
+        ...(payload !== undefined ? { payload: payload as Prisma.InputJsonValue } : {}),
       },
     });
 
-    logger.info("DLQ manual retry", { event: "job.dlq_retried", jobId: id });
+    logger.info("DLQ manual retry", { event: "job.dlq_retried", jobId: id, payloadEdited: payload !== undefined });
     await publishJobUpdate(updated);
     return updated;
   }

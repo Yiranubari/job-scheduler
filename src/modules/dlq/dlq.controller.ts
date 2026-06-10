@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { dlqService } from "@/modules/dlq/dlq.service";
+import type { RetryDlqDto } from "@/modules/dlq/dlq.schema";
 
 export async function listDlq(
   _req: Request,
@@ -21,7 +22,8 @@ export async function retryDlqJob(
 ): Promise<void> {
   try {
     const { id } = res.locals.params as { id: string };
-    const job = await dlqService.retry(id);
+    const { payload } = (res.locals.body ?? {}) as RetryDlqDto;
+    const job = await dlqService.retry(id, payload);
     res.status(200).json({ data: job });
   } catch (err) {
     next(err);
