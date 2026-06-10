@@ -16,3 +16,6 @@ export const REAPER_TICK_MS = 10_000;
 export const STUCK_TIMEOUT_MS = 60_000;
 export const INFLIGHT_PREFIX = "inflight:";
 export const DLQ_ALERT_THRESHOLD = 10;
+export const EMAIL_SIM_LATENCY_MIN_MS = 2000;
+export const EMAIL_SIM_LATENCY_SPREAD_MS = 3000;
+export const EMAIL_SIM_FAILURE_RATE = 0.25;
