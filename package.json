@@ -21,6 +21,7 @@
     "dev:worker": "tsx watch src/worker.entry.ts",
     "dev:scheduler": "tsx watch src/scheduler.entry.ts",
     "dev:api": "tsx watch src/server.ts",
-    "test": "vitest run"
+    "test": "vitest run",
+    "bench": "tsx bench/heap-vs-skiplist.ts"
   }
 }
