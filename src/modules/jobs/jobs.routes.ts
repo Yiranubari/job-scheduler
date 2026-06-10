@@ -4,6 +4,7 @@ import {
   listJobs,
   getJob,
   cancelJob,
+  restartJob,
 } from "@/modules/jobs/jobs.controller";
 import { validate } from "@/middleware/validate.middleware";
 import {
@@ -18,5 +19,6 @@ router.post("/", validate(createJobSchema), createJob);
 router.get("/", validate(listJobsSchema, "query"), listJobs);
 router.get("/:id", validate(jobIdSchema, "params"), getJob);
 router.post("/:id/cancel", validate(jobIdSchema, "params"), cancelJob);
+router.post("/:id/restart", validate(jobIdSchema, "params"), restartJob);
 
 export default router;

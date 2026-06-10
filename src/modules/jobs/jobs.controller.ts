@@ -62,3 +62,17 @@ export async function cancelJob(
     next(err);
   }
 }
+
+export async function restartJob(
+  _req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const { id } = res.locals.params as { id: string };
+    const job = await jobService.restart(id);
+    res.status(200).json({ data: job });
+  } catch (err) {
+    next(err);
+  }
+}

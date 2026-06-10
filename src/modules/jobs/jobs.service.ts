@@ -138,6 +138,28 @@ export class JobService {
       throw new ConflictError("Dependency would create a cycle");
     }
   }
+
+  async restart(id: string): Promise<Job> {
+    const job = await prisma.job.findUnique({ where: { id } });
+    if (!job) throw new NotFoundError(`Job ${id} not found`);
+    if (job.status !== "cancelled") throw new ConflictError("Only cancelled jobs can be restarted");
+
+    const updated = await prisma.job.update({
+      where: { id },
+      data: {
+        status: "pending",
+        retryCount: 0,
+        lastError: null,
+        scheduledAt: new Date(),
+        workerId: null,
+        claimedAt: null,
+      },
+    });
+
+    logger.info("Job restarted", { event: "job.restarted", jobId: id });
+    await publishJobUpdate(updated);
+    return updated;
+  }
 }
 
 export const jobService = new JobService();
