@@ -1,4 +1,6 @@
 import { Job } from "@prisma/client";
+import { Comparator } from "@/core/heap";
+import { effectivePriority } from "@/core/aging";
 
 export function jobComparator(a: Job, b: Job): number {
   if (a.priority !== b.priority) {
@@ -12,4 +14,18 @@ export function jobComparator(a: Job, b: Job): number {
   }
 
   return a.createdAt.getTime() - b.createdAt.getTime();
+}
+
+export function makeJobComparator(now: number = Date.now()): Comparator<Job> {
+  return (a, b) => {
+    const pa = effectivePriority(a, now);
+    const pb = effectivePriority(b, now);
+    if (pa !== pb) return pa - pb;
+
+    const at = a.scheduledAt.getTime();
+    const bt = b.scheduledAt.getTime();
+    if (at !== bt) return at - bt;
+
+    return a.createdAt.getTime() - b.createdAt.getTime();
+  };
 }

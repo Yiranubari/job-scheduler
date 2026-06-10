@@ -10,3 +10,5 @@ export const RECURRING_INTERVAL_MS: Record<string, number> = {
   every_5_minutes: 300_000,
   every_1_hour: 3_600_000,
 };
+export const SCHEDULER_TICK_MS = 1000;
+export const INFLIGHT_TTL_SECONDS = 30;
