@@ -1,122 +1,95 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useCallback, useEffect, useState } from "react";
+import { api } from "./lib/api";
+import type { Job, Stats } from "./lib/api";
+import { useEventStream } from "./hooks/useEventStream";
 
-function App() {
-  const [count, setCount] = useState(0)
+type View = "dashboard" | "jobs" | "create" | "dlq";
+
+export default function App() {
+  const [view, setView] = useState<View>("dashboard");
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [stats, setStats] = useState<Stats | null>(null);
+
+  const refreshStats = useCallback(() => {
+    api
+      .getStats()
+      .then((r) => setStats(r.data))
+      .catch(() => {});
+  }, []);
+
+  const loadJobs = useCallback(() => {
+    api
+      .listJobs()
+      .then((r) => setJobs(r.data))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    loadJobs();
+    refreshStats();
+  }, [loadJobs, refreshStats]);
+
+  const onJobUpdate = useCallback(
+    (job: Job) => {
+      setJobs((prev) => {
+        const idx = prev.findIndex((j) => j.id === job.id);
+        if (idx === -1) return [job, ...prev];
+        const next = [...prev];
+        next[idx] = { ...next[idx], ...job };
+        return next;
+      });
+      refreshStats();
+    },
+    [refreshStats],
+  );
+
+  const { connected } = useEventStream(onJobUpdate);
+
+  const dlqCount = stats?.dlqSize ?? jobs.filter((j) => j.inDlq).length;
 
   return (
     <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
+      <header className="app">
+        <span className="app-title">Job Scheduler</span>
+        {!connected && (
+          <span className="conn-warn">Stream disconnected — reconnecting…</span>
+        )}
+      </header>
+
+      <div className="tabs">
         <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
+          className={`tab ${view === "dashboard" ? "active" : ""}`}
+          onClick={() => setView("dashboard")}
         >
-          Count is {count}
+          Dashboard
         </button>
-      </section>
+        <button
+          className={`tab ${view === "jobs" ? "active" : ""}`}
+          onClick={() => setView("jobs")}
+        >
+          Jobs
+        </button>
+        <button
+          className={`tab ${view === "create" ? "active" : ""}`}
+          onClick={() => setView("create")}
+        >
+          Create
+        </button>
+        <button
+          className={`tab ${view === "dlq" ? "active" : ""}`}
+          onClick={() => setView("dlq")}
+        >
+          Dead-letter
+          {dlqCount > 0 && <span className="count">{dlqCount}</span>}
+        </button>
+      </div>
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
+      <main>
+        {view === "dashboard" && <Dashboard stats={stats} />}
+        {view === "jobs" && <Jobs jobs={jobs} />}
+        {view === "create" && <CreateJob onCreated={loadJobs} />}
+        {view === "dlq" && <Dlq jobs={jobs} />}
+      </main>
     </>
-  )
+  );
 }
-
-export default App
