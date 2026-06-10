@@ -1,3 +1,4 @@
+import { prisma } from "@/lib/prisma";
 import { redis } from "@/lib/redis";
 import { DispatchQueue } from "@/engine/dispatch";
 import { Scheduler } from "@/engine/scheduler";
@@ -10,11 +11,14 @@ const reaper = new Reaper();
 scheduler.start();
 reaper.start();
 
-process.on("SIGINT", () => {
+const shutdown = async (): Promise<void> => {
   scheduler.stop();
   reaper.stop();
-});
-process.on("SIGTERM", () => {
-  scheduler.stop();
-  reaper.stop();
-});
+  await new Promise((r) => setTimeout(r, 2000));
+  await prisma.$disconnect();
+  redis.disconnect();
+  process.exit(0);
+};
+
+process.on("SIGINT", shutdown);
+process.on("SIGTERM", shutdown);
