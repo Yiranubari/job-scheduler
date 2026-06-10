@@ -12,3 +12,5 @@ export const RECURRING_INTERVAL_MS: Record<string, number> = {
 };
 export const SCHEDULER_TICK_MS = 1000;
 export const INFLIGHT_TTL_SECONDS = 30;
+export const REAPER_TICK_MS = 10_000;
+export const STUCK_TIMEOUT_MS = 60_000;
