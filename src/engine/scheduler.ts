@@ -6,7 +6,7 @@ import { MinHeap } from "@/core/heap";
 import { makeJobComparator } from "@/core/comparator";
 import { areDependenciesMet } from "@/core/dag";
 import { DispatchQueue } from "@/engine/dispatch";
-import { SCHEDULER_TICK_MS, INFLIGHT_TTL_SECONDS } from "@/config/constants";
+import { SCHEDULER_TICK_MS, INFLIGHT_TTL_SECONDS, INFLIGHT_PREFIX } from "@/config/constants";
 
 export class Scheduler {
   private running = false;
@@ -22,7 +22,7 @@ export class Scheduler {
       } catch (err) {
         logger.error("Scheduler tick error", {
           event: "scheduler.error",
-          error: (err as Error).message,
+          error: String(err),
         });
       }
       await this.sleep(SCHEDULER_TICK_MS);
@@ -75,7 +75,7 @@ export class Scheduler {
 
   private async markInFlight(jobId: string): Promise<boolean> {
     const result = await redis.set(
-      `inflight:${jobId}`,
+      `${INFLIGHT_PREFIX}${jobId}`,
       "1",
       "EX",
       INFLIGHT_TTL_SECONDS,

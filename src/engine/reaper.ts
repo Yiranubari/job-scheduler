@@ -17,7 +17,7 @@ export class Reaper {
       } catch (err) {
         logger.error("Reaper tick error", {
           event: "reaper.error",
-          error: (err as Error).message,
+          error: String(err),
         });
       }
       await this.sleep(REAPER_TICK_MS);

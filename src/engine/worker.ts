@@ -58,6 +58,8 @@ export class Worker {
       return;
     }
 
+    await this.dispatch.ack(jobId);
+
     logger.info("Job started", {
       event: "job.started",
       jobId: job.id,

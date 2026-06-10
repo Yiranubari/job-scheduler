@@ -26,14 +26,12 @@ async function deliver(rendered: string, to: string): Promise<string> {
   }
 
   const messageId = `msg_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-  logger.info(
-    logger.info("Email delivered", {
-      event: "email.delivered",
-      to,
-      messageId,
-      latency,
-    }),
-  );
+  logger.info("Email delivered", {
+    event: "email.delivered",
+    to,
+    messageId,
+    latency,
+  });
   return messageId;
 }
 

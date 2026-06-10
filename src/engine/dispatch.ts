@@ -1,5 +1,5 @@
 import { Redis } from "ioredis";
-import { DISPATCH_KEY } from "@/config/constants";
+import { DISPATCH_KEY, INFLIGHT_PREFIX } from "@/config/constants";
 
 export class DispatchQueue {
   constructor(private readonly redis: Redis) {}
@@ -11,6 +11,10 @@ export class DispatchQueue {
   async pop(timeoutSeconds = 5): Promise<string | null> {
     const result = await this.redis.brpop(DISPATCH_KEY, timeoutSeconds);
     return result ? result[1] : null;
+  }
+
+  async ack(jobId: string): Promise<void> {
+    await this.redis.del(`${INFLIGHT_PREFIX}${jobId}`);
   }
 
   async size(): Promise<number> {
