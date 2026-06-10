@@ -2,6 +2,10 @@ import { useCallback, useEffect, useState } from "react";
 import { api } from "./lib/api";
 import type { Job, Stats } from "./lib/api";
 import { useEventStream } from "./hooks/useEventStream";
+import Dashboard from "./pages/Dashboard";
+import Jobs from "./pages/Jobs";
+import CreateJob from "./pages/CreateJob";
+import Dlq from "./pages/Dlq";
 
 type View = "dashboard" | "jobs" | "create" | "dlq";
 
@@ -9,25 +13,35 @@ export default function App() {
   const [view, setView] = useState<View>("dashboard");
   const [jobs, setJobs] = useState<Job[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
+  const [loadError, setLoadError] = useState(false);
 
   const refreshStats = useCallback(() => {
     api
       .getStats()
-      .then((r) => setStats(r.data))
-      .catch(() => {});
+      .then((r) => { setStats(r.data); setLoadError(false); })
+      .catch(() => setLoadError(true));
   }, []);
 
   const loadJobs = useCallback(() => {
     api
       .listJobs()
-      .then((r) => setJobs(r.data))
-      .catch(() => {});
+      .then((r) => { setJobs(r.data); setLoadError(false); })
+      .catch(() => setLoadError(true));
   }, []);
 
   useEffect(() => {
     loadJobs();
     refreshStats();
   }, [loadJobs, refreshStats]);
+
+  useEffect(() => {
+    if (!loadError) return;
+    const t = setInterval(() => {
+      loadJobs();
+      refreshStats();
+    }, 5000);
+    return () => clearInterval(t);
+  }, [loadError, loadJobs, refreshStats]);
 
   const onJobUpdate = useCallback(
     (job: Job) => {
@@ -52,7 +66,7 @@ export default function App() {
       <header className="app">
         <span className="app-title">Job Scheduler</span>
         {!connected && (
-          <span className="conn-warn">Stream disconnected — reconnecting…</span>
+          <span className="conn-warn">Stream disconnected - reconnecting…</span>
         )}
       </header>
 
@@ -83,6 +97,13 @@ export default function App() {
           {dlqCount > 0 && <span className="count">{dlqCount}</span>}
         </button>
       </div>
+
+      {loadError && (
+        <div className="toast error">
+          Couldn't reach the API.{" "}
+          <button className="btn sm" onClick={() => { loadJobs(); refreshStats(); }}>Retry</button>
+        </div>
+      )}
 
       <main>
         {view === "dashboard" && <Dashboard stats={stats} />}
