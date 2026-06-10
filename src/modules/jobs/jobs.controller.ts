@@ -1,18 +1,14 @@
 import { Request, Response, NextFunction } from "express";
 import { jobService } from "@/modules/jobs/jobs.service";
-import {
-  createJobSchema,
-  listJobsSchema,
-  jobIdSchema,
-} from "@/modules/jobs/jobs.schema";
+import type { CreateJobDto, ListJobsQuery } from "@/modules/jobs/jobs.schema";
 
 export async function createJob(
-  req: Request,
+  _req: Request,
   res: Response,
   next: NextFunction,
 ): Promise<void> {
   try {
-    const input = createJobSchema.parse(req.body);
+    const input = res.locals.body as CreateJobDto;
     const job = await jobService.create(input);
     res.status(201).json({ data: job });
   } catch (err) {
@@ -21,12 +17,12 @@ export async function createJob(
 }
 
 export async function listJobs(
-  req: Request,
+  _req: Request,
   res: Response,
   next: NextFunction,
 ): Promise<void> {
   try {
-    const query = listJobsSchema.parse(req.query);
+    const query = res.locals.query as ListJobsQuery;
     const result = await jobService.list(query);
     res
       .status(200)
@@ -40,12 +36,12 @@ export async function listJobs(
 }
 
 export async function getJob(
-  req: Request,
+  _req: Request,
   res: Response,
   next: NextFunction,
 ): Promise<void> {
   try {
-    const { id } = jobIdSchema.parse(req.params);
+    const { id } = res.locals.params as { id: string };
     const job = await jobService.getById(id);
     res.status(200).json({ data: job });
   } catch (err) {
@@ -54,12 +50,12 @@ export async function getJob(
 }
 
 export async function cancelJob(
-  req: Request,
+  _req: Request,
   res: Response,
   next: NextFunction,
 ): Promise<void> {
   try {
-    const { id } = jobIdSchema.parse(req.params);
+    const { id } = res.locals.params as { id: string };
     const job = await jobService.cancel(id);
     res.status(200).json({ data: job });
   } catch (err) {
