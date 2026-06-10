@@ -52,10 +52,10 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   });
   const body = await res.json().catch(() => null);
   if (!res.ok) {
-    throw new ApiError(
-      body?.error ?? `Request failed (${res.status})`,
-      body?.details,
-    );
+    const message = res.status === 503
+      ? "Service temporarily unavailable - retrying"
+      : body?.error ?? `Request failed (${res.status})`;
+    throw new ApiError(message, body?.details);
   }
   return body;
 }
@@ -73,9 +73,14 @@ export const api = {
     }),
   cancelJob: (id: string) =>
     request<{ data: Job }>(`/jobs/${id}/cancel`, { method: "POST" }),
+  restartJob: (id: string) =>
+    request<{ data: Job }>(`/jobs/${id}/restart`, { method: "POST" }),
   listDlq: () => request<{ data: Job[] }>(`/dlq`),
-  retryDlqJob: (id: string) =>
-    request<{ data: Job }>(`/dlq/${id}/retry`, { method: "POST" }),
+  retryDlqJob: (id: string, payload?: Record<string, unknown>) =>
+    request<{ data: Job }>(`/dlq/${id}/retry`, {
+      method: "POST",
+      body: JSON.stringify(payload ? { payload } : {}),
+    }),
   getStats: () => request<{ data: Stats }>(`/dashboard/stats`),
 };
 
