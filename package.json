@@ -14,11 +14,13 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "prisma": "^7.8.0",
-    "tsx": "^4.22.4"
+    "tsx": "^4.22.4",
+    "vitest": "^4.1.8"
   },
   "scripts": {
     "dev:worker": "tsx watch src/worker.entry.ts",
     "dev:scheduler": "tsx watch src/scheduler.entry.ts",
-    "dev:api": "tsx watch src/server.ts"
+    "dev:api": "tsx watch src/server.ts",
+    "test": "vitest run"
   }
 }
