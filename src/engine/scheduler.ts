@@ -22,6 +22,7 @@ export class Scheduler {
       } catch (err) {
         logger.error("Scheduler tick error", {
           event: "scheduler.error",
+          code: (err as { code?: string }).code,
           error: String(err),
         });
       }

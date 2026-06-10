@@ -58,8 +58,6 @@ export class Worker {
       return;
     }
 
-    await this.dispatch.ack(jobId);
-
     logger.info("Job started", {
       event: "job.started",
       jobId: job.id,
@@ -161,6 +159,7 @@ export class Worker {
         claimedAt: null,
       },
     });
+    await this.dispatch.ack(job.id);
     logger.warn("Retry scheduled", {
       event: "job.retry_scheduled",
       jobId: job.id,

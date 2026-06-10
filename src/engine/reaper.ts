@@ -17,6 +17,7 @@ export class Reaper {
       } catch (err) {
         logger.error("Reaper tick error", {
           event: "reaper.error",
+          code: (err as { code?: string }).code,
           error: String(err),
         });
       }
