@@ -1,73 +1,42 @@
-# React + TypeScript + Vite
+# Job Scheduler UI
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React frontend for the job scheduler. Built with Vite, TypeScript, and plain CSS. No UI libraries.
 
-Currently, two official plugins are available:
+## What it does
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Dashboard**: job counts by status, updated in real time
+- **Jobs**: filterable table of all jobs, with a detail drawer showing the full payload, dependency statuses, worker info, and last error. Cancel, restart, and retry actions live here too
+- **Create**: form for new jobs with priority, schedule time, recurring interval, and a dependency picker. Validation errors from the API show up on the exact field that caused them
+- **Dead-letter**: failed jobs with their errors. The payload is editable, so you can fix the cause and retry in one place
 
-## React Compiler
+All four views update live. The app holds one Server-Sent Events connection (`/api/events`), and every job change the backend publishes flows into shared state in `App.tsx`. Pages just render slices of that state, so nothing needs polling or manual refresh.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+If the API becomes unreachable, the app says so, offers a retry button, and also retries on its own every 5 seconds. The header shows a warning while the event stream is down. EventSource reconnects automatically.
 
-## Expanding the ESLint configuration
+## Layout
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+src/
+  lib/api.ts               typed API client
+  hooks/useEventStream.ts  SSE subscription hook
+  pages/                   Dashboard, Jobs, CreateJob, Dlq
+  App.tsx                  shell, tabs, shared job state, the single SSE connection
+  index.css                all styles
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Running
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
+
+Runs on http://localhost:5173 and proxies /api to the backend on port 3000 (see `vite.config.ts`), so start the API first.
+
+## Building
+
+```bash
+npm run build
+```
+
+Output goes to `dist/`. In production Nginx serves these files directly and proxies /api to the Node API. No server-side rendering, no environment variables needed at build time.
