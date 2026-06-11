@@ -4,7 +4,7 @@ A background job scheduler built from scratch. Jobs go into a priority queue, in
 
 **Live:** https://yiranubari-scheduler.duckdns.org
 **API docs (Swagger):** https://yiranubari-scheduler.duckdns.org/api/docs
-**Architecture:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+**Architecture:** [src/docs/ARCHITECTURE.md](https://github.com/Yiranubari/job-scheduler/blob/main/src/docs/ARCHITECTURE.md)
 
 ## What it does
 
@@ -18,7 +18,7 @@ A background job scheduler built from scratch. Jobs go into a priority queue, in
 - Cancellation at any point before completion, including mid-processing
 - Aging: jobs that wait too long get a priority boost so low-priority work is never starved
 - Live dashboard, jobs table, create form, and DLQ view, all updating in real time over Server-Sent Events
-- A skip list implementation benchmarked against the heap (`npm run bench`), with the numbers and analysis in the architecture doc
+- A skip list implementation benchmarked against the heap (`npm run bench`), with the numbers and analysis in the [architecture doc](https://github.com/Yiranubari/job-scheduler/blob/main/src/docs/ARCHITECTURE.md)
 
 ## Stack
 
@@ -38,7 +38,7 @@ frontend/      React app
 bench/         heap vs skip list benchmark
 tests/         unit tests
 deploy/        PM2 ecosystem file and Nginx config used in production
-docs/          architecture document
+docs/          [architecture document](https://github.com/Yiranubari/job-scheduler/blob/main/src/docs/ARCHITECTURE.md)
 ```
 
 ## Running locally
@@ -141,4 +141,4 @@ Full interactive docs at `/api/docs`. The short version:
 
 ## Deployment
 
-Deployed manually to an AWS EC2 instance with Nginx as a reverse proxy, HTTPS via Let's Encrypt, and PM2 keeping the three processes alive across crashes and reboots. The exact configs are in `deploy/`, and the full story is in the architecture doc.
+Deployed manually to an AWS EC2 instance with Nginx as a reverse proxy, HTTPS via Let's Encrypt, and PM2 keeping the three processes alive across crashes and reboots. The exact configs are in `deploy/`, and the full story is in the [architecture doc](https://github.com/Yiranubari/job-scheduler/blob/main/src/docs/ARCHITECTURE.md).
