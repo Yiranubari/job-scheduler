@@ -85,6 +85,36 @@ cd frontend && npm run dev
 
 Open http://localhost:5173. The Vite dev server proxies /api to the API on port 3000.
 
+## Configuration
+
+Key constants live in `src/config/constants.ts`:
+
+| Constant               | Default | What it does                                                |
+| ---------------------- | ------- | ----------------------------------------------------------- |
+| MAX retries (per job)  | 3       | Attempts before a job moves to the DLQ                      |
+| DLQ_ALERT_THRESHOLD    | 10      | Logs a warning when the DLQ reaches this size               |
+| AGING_THRESHOLD_MS     | 30000   | Jobs waiting this long get a priority boost                 |
+| SCHEDULER_TICK_MS      | 1000    | How often the scheduler rebuilds the queue                  |
+| STUCK_TIMEOUT_MS       | 60000   | Processing jobs older than this are reclaimed by the reaper |
+| EMAIL_SIM_FAILURE_RATE | 0.25    | Simulated email failure rate, exaggerated for demos         |
+
+## Quick example
+
+Create a job:
+
+```bash
+curl -X POST https://yiranubari-scheduler.duckdns.org/api/jobs \
+  -H "Content-Type: application/json" \
+  -d '{"type": "send_email", "payload": {"to": "a@b.com", "subject": "Hello"}, "priority": 1}'
+```
+
+Test the DAG: create job A scheduled in the future, then job B depending on it. B stays pending until A completes.
+
+```bash
+curl -X POST .../api/jobs -d '{"type": "send_email", "payload": {...}, "scheduledAt": "<1 min from now>"}'
+curl -X POST .../api/jobs -d '{"type": "send_email", "payload": {...}, "dependsOn": ["<job A id>"]}'
+```
+
 ## Tests and benchmark
 
 ```bash
