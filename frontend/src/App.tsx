@@ -14,18 +14,25 @@ export default function App() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [loadError, setLoadError] = useState(false);
+  const [dlqRefresh, setDlqRefresh] = useState(0);
 
   const refreshStats = useCallback(() => {
     api
       .getStats()
-      .then((r) => { setStats(r.data); setLoadError(false); })
+      .then((r) => {
+        setStats(r.data);
+        setLoadError(false);
+      })
       .catch(() => setLoadError(true));
   }, []);
 
   const loadJobs = useCallback(() => {
     api
       .listJobs()
-      .then((r) => { setJobs(r.data); setLoadError(false); })
+      .then((r) => {
+        setJobs(r.data);
+        setLoadError(false);
+      })
       .catch(() => setLoadError(true));
   }, []);
 
@@ -53,6 +60,7 @@ export default function App() {
         return next;
       });
       refreshStats();
+      setDlqRefresh((n) => n + 1);
     },
     [refreshStats],
   );
@@ -101,7 +109,15 @@ export default function App() {
       {loadError && (
         <div className="toast error">
           Couldn't reach the API.{" "}
-          <button className="btn sm" onClick={() => { loadJobs(); refreshStats(); }}>Retry</button>
+          <button
+            className="btn sm"
+            onClick={() => {
+              loadJobs();
+              refreshStats();
+            }}
+          >
+            Retry
+          </button>
         </div>
       )}
 
@@ -109,7 +125,7 @@ export default function App() {
         {view === "dashboard" && <Dashboard stats={stats} />}
         {view === "jobs" && <Jobs jobs={jobs} />}
         {view === "create" && <CreateJob onCreated={loadJobs} />}
-        {view === "dlq" && <Dlq jobs={jobs} />}
+        {view === "dlq" && <Dlq refreshSignal={dlqRefresh} />}
       </main>
     </>
   );
